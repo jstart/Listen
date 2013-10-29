@@ -7,12 +7,18 @@
 //
 
 #import "CLTAppDelegate.h"
+#import <PocketAPI/PocketAPI.h>
 
 @implementation CLTAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+	NSString * plistPath = [[NSBundle mainBundle] pathForResource:@"Pocket" ofType:@"plist"];
+
+	NSDictionary * propertiesDictionary = [[NSDictionary alloc] initWithContentsOfFile:plistPath];
+    [[PocketAPI sharedAPI] setConsumerKey:propertiesDictionary[@"CONSUMER_KEY"]];
+
     return YES;
 }
 							
@@ -41,6 +47,18 @@
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+}
+
+-(BOOL)application:(UIApplication *)application
+           openURL:(NSURL *)url
+ sourceApplication:(NSString *)sourceApplication
+        annotation:(id)annotation{
+    if([[PocketAPI sharedAPI] handleOpenURL:url]){
+        return YES;
+    }else{
+        // if you handle your own custom url-schemes, do it here
+        return NO;
+    }
 }
 
 @end
