@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>9CD2A068-BC93-4238-9378-F576181DD216</string>
+	<key>IDESourceControlProjectName</key>
+	<string>Listen</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>15F96A10-BDE3-4BE3-A657-7CA141CE54FE</key>
+		<string>ssh://github.com/jstart/Listen.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Listen.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>15F96A10-BDE3-4BE3-A657-7CA141CE54FE</key>
+		<string>..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>ssh://github.com/jstart/Listen.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>15F96A10-BDE3-4BE3-A657-7CA141CE54FE</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>15F96A10-BDE3-4BE3-A657-7CA141CE54FE</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Listen</string>
+		</dict>
+	</array>
+</dict>
+</plist>
