@@ -216,6 +216,13 @@
 				LastUpgradeCheck = 0500;
 				ORGANIZATIONNAME = truman;
 				TargetAttributes = {
+					239F0BF1181F488200503170 = {
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
+					};
 					239F0C15181F488200503170 = {
 						TestTargetID = 239F0BF1181F488200503170;
 					};

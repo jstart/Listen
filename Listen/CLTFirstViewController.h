@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface CLTFirstViewController : UIViewController
+@interface CLTFirstViewController : UITableViewController
 
 @end
