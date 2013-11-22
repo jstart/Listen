@@ -1,5 +1,5 @@
 //
-//  CLTSecondViewController.h
+//  CLTPocketListViewController.h
 //  Listen
 //
 //  Created by Christopher Truman on 10/28/13.
@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface CLTSecondViewController : UIViewController
+@interface CLTPocketListViewController : UITableViewController
 
 @end

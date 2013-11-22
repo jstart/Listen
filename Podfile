@@ -4,4 +4,6 @@ inhibit_all_warnings!
 pod 'PocketAPI', '~> 1.0.2'
 pod 'AFNetworking'
 pod 'JSONKit'
+pod 'SVWebViewController', :head
+pod 'Block-KVO'
 
