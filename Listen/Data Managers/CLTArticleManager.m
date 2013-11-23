@@ -44,20 +44,6 @@ static CLTArticleManager * sharedInstance;
                 sharedInstance.localReadArticles = [NSMutableArray array];
             });
         }
-
-
-        [sharedInstance observeRelationship:@"localArticles" changeBlock:^(__weak id self, id old, id new){
-
-        }
-                   insertionBlock:^(__weak id self, __weak id object, id new){
-
-                   }
-                     removalBlock:^(__weak id self, id old, NSIndexSet *indexes){
-
-                     }
-                 replacementBlock:^(__weak id self,id old, id new, NSIndexSet *indexes){
-
-                 }];
         return sharedInstance;
     }
 
@@ -89,7 +75,7 @@ static CLTArticleManager * sharedInstance;
 
 - (NSArray *)localArticlesSortedByDate{
     return [[self localArticles] sortedArrayUsingComparator:^(CLTArticle * article1, CLTArticle * article2){
-        return [article1.date compare:article2.date];
+        return [article2.date compare:article1.date];
     }];
 }
 
@@ -125,12 +111,14 @@ static CLTArticleManager * sharedInstance;
 
 -(void)RD_parseArticles:(NSArray *) articles WithSuccess:(void(^)()) success andFailure:(void(^)()) failure {
     AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
-
+    NSMutableArray * operationArray = [NSMutableArray array];
     for (CLTArticle * article in articles) {
         if (!article.URL) {
             return;
         }
-        [manager GET:@"https://www.readability.com/api/content/v1/parser" parameters:@{@"token": @"a14cf32527d3837c4385d8c39f080bc1927b58ee", @"url": article.URL} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSMutableURLRequest *request = [manager.requestSerializer requestWithMethod:@"GET" URLString:[[NSURL URLWithString:@"https://www.readability.com/api/content/v1/parser" relativeToURL:manager.baseURL] absoluteString] parameters:@{@"token": @"a14cf32527d3837c4385d8c39f080bc1927b58ee", @"url": article.URL}];
+
+        NSOperation * op = [manager HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSString * content = responseObject[@"content"];
             content = [[content kv_decodeHTMLCharacterEntities] kv_stripXMLTags];
             article.content = content;
@@ -140,14 +128,21 @@ static CLTArticleManager * sharedInstance;
             NSLog(@"Error: %@", error);
             failure();
         }];
+        [operationArray addObject:op];
     }
+    [AFURLConnectionOperation batchOfRequestOperations:operationArray progressBlock:^(NSUInteger numberOfFinishedOperations, NSUInteger totalNumberOfOperations){
+        
+    }completionBlock:^(NSArray * completions){
+        success();
+        [self persist];
+    }];
 }
 
 - (void)fetchUnreadArticlesSinceLastFetchWithSuccess:(CLTArticleManagerSuccess) success andFailure:(CLTArticleManagerFailure) failure{
     NSString *apiMethod = @"get";
     PocketAPIHTTPMethod httpMethod = PocketAPIHTTPMethodPOST;
     NSMutableDictionary *arguments = [NSMutableDictionary dictionaryWithDictionary:@{@"consumer_key": [NSString stringWithFormat:@"%lu", (unsigned long)[PocketAPI sharedAPI].appID], @"detailType" : @"complete", @"contentType": @"article", @"sort":@"newest"}];
-    if (self.since) {
+    if (self.since && self.localArticles.count > 0) {
         [arguments setObject:self.since forKey:@"since"];
     }
 
@@ -155,21 +150,23 @@ static CLTArticleManager * sharedInstance;
                           withHTTPMethod:httpMethod
                                arguments:arguments
                                  handler: ^(PocketAPI *api, NSString *apiMethod, NSDictionary *response, NSError *error){
-                                     self.since = response[@"since"];
-                                     if (![response[@"list"] isKindOfClass:[NSArray class]]) {
-                                         NSMutableArray * articles = [NSMutableArray array];
-                                         for (NSDictionary * pocketDictionary in [response[@"list"] allValues]) {
-                                             CLTArticle * article = [CLTArticle createArticleFromDictionary:pocketDictionary];
-                                             [articles addObject:article];
-                                         }
-                                         [self RD_parseArticles:articles WithSuccess:^(){
+                                     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(){
+                                         self.since = response[@"since"];
+                                         if (![response[@"list"] isKindOfClass:[NSArray class]]) {
+                                             NSMutableArray * articles = [NSMutableArray array];
+                                             for (NSDictionary * pocketDictionary in [response[@"list"] allValues]) {
+                                                 CLTArticle * article = [CLTArticle createArticleFromDictionary:pocketDictionary];
+                                                 [articles addObject:article];
+                                             }
+                                             [self RD_parseArticles:articles WithSuccess:^(){
+                                                 success();
+                                             } andFailure:^(){
+                                                 failure(nil,nil);
+                                             }];
+                                         }else{
                                              success();
-                                         } andFailure:^(){
-                                             failure(nil,nil);
-                                         }];
-                                     }else{
-                                         success();
-                                     }
+                                         }
+                                     });
                                  }];
 }
 

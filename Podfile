@@ -3,7 +3,7 @@ inhibit_all_warnings!
 
 pod 'PocketAPI', '~> 1.0.2'
 pod 'AFNetworking'
-pod 'JSONKit'
+pod 'JSONKit', :git => 'https://github.com/jstart/JSONKit.git'
 pod 'SVWebViewController', :head
 pod 'Block-KVO'
 
