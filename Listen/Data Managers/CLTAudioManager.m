@@ -114,6 +114,7 @@ static CLTAudioManager * sharedInstance;
     self.synth.delegate = self;
     
     self.audioPlayer = [[AVAudioPlayer alloc] init];
+    
     [[AVAudioSession sharedInstance] setActive: YES error: nil];
     //    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategorySoloAmbient withOptions:AVAudioSessionCategoryOptionDuckOthers error:nil];
 }

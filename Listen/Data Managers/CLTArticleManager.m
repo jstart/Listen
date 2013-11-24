@@ -28,13 +28,13 @@ static CLTArticleManager * sharedInstance;
 }
 
 + (id)shared {
-
-    if (!sharedInstance) {
+    if ([CLTArticleManager hasBeenPersisted]) {
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSString *documentsDirectory = [paths objectAtIndex:0];
         NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:@"CLTArticleManager"];
         NSData * data = [NSData dataWithContentsOfFile:dataPath];
         sharedInstance = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+    }else{
         if (!sharedInstance) {
             static dispatch_once_t onceToken;
             dispatch_once(&onceToken, ^{
@@ -44,10 +44,8 @@ static CLTArticleManager * sharedInstance;
                 sharedInstance.localReadArticles = [NSMutableArray array];
             });
         }
-        return sharedInstance;
     }
-
-	return sharedInstance;
+    return sharedInstance;
 }
 
 - (void) encodeWithCoder:(NSCoder *)encoder {
@@ -130,12 +128,13 @@ static CLTArticleManager * sharedInstance;
         }];
         [operationArray addObject:op];
     }
-    [AFURLConnectionOperation batchOfRequestOperations:operationArray progressBlock:^(NSUInteger numberOfFinishedOperations, NSUInteger totalNumberOfOperations){
+    NSArray * operations  = [AFURLConnectionOperation batchOfRequestOperations:operationArray progressBlock:^(NSUInteger numberOfFinishedOperations, NSUInteger totalNumberOfOperations){
         
     }completionBlock:^(NSArray * completions){
         success();
         [self persist];
     }];
+    [manager.operationQueue addOperations:operations waitUntilFinished:NO];
 }
 
 - (void)fetchUnreadArticlesSinceLastFetchWithSuccess:(CLTArticleManagerSuccess) success andFailure:(CLTArticleManagerFailure) failure{
@@ -149,7 +148,7 @@ static CLTArticleManager * sharedInstance;
     [[PocketAPI sharedAPI] callAPIMethod:apiMethod
                           withHTTPMethod:httpMethod
                                arguments:arguments
-                                 handler: ^(PocketAPI *api, NSString *apiMethod, NSDictionary *response, NSError *error){
+                                 handler:^(PocketAPI *api, NSString *apiMethod, NSDictionary *response, NSError *error){
                                      dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(){
                                          self.since = response[@"since"];
                                          if (![response[@"list"] isKindOfClass:[NSArray class]]) {
