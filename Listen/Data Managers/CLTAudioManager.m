@@ -47,26 +47,66 @@ static CLTAudioManager * sharedInstance;
     return sharedInstance;
 }
 
-- (void)setPlaylist:(NSMutableArray *)playlist{
-    self.currentArticle = 0;
-    
+-(id)init{
+    if (self = [super init]) {
+        [self setup];
+    }
+    return self;
 }
 
-- (void)setCurrentArticle:(int)index{
+-(void)setup{
+    self.shouldProceed = YES;
+    
+    self.playlist = [NSMutableArray array];
+    
+    // set up our audio session
+    self.session = [AVAudioSession sharedInstance];
+    
+    [self.session setCategory:AVAudioSessionCategoryPlayback error:nil];
+    
+    // set up our TTS synth
+    self.synth = [[AVSpeechSynthesizer alloc] init];
+    self.synth.delegate = self;
+    
+    self.audioPlayer = [[AVAudioPlayer alloc] init];
+    
+    [[AVAudioSession sharedInstance] setActive: YES error: nil];
+    //    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategorySoloAmbient withOptions:AVAudioSessionCategoryOptionDuckOthers error:nil];
+}
+
+- (void)setPlaylist:(NSMutableArray *)playlist{
+    self.currentArticle = 0;
+    _playlist = playlist;
+}
+
+- (void)setArticleAtIndex:(int)index{
     self.currentArticle = index;
-    [self stop];
+    if ([self.synth isSpeaking] || [self.synth isPaused]) {
+        [self stop];
+    }else{
+        [self speakArticleAtIndex:index];
+    }
 }
 
 -(void)speakArticleAtIndex:(NSInteger) index {
-    CLTArticle * article = self.playlist[index];
-    
-    NSString * articleContent = [NSString stringWithFormat:@"%@, %@", article.title, article.content];
-    AVSpeechUtterance *utterance = [AVSpeechUtterance speechUtteranceWithString:articleContent];
-    utterance.rate = AVSpeechUtteranceDefaultSpeechRate - (AVSpeechUtteranceDefaultSpeechRate*0.4);
-    utterance.postUtteranceDelay = 0.2;
-    utterance.preUtteranceDelay = 0.2;
-    [self.synth speakUtterance:utterance];
-    [self updateNowPlayingWithArticle:article];
+    if (index > self.playlist.count || index < 0) {
+        NSString * articleContent = @"";
+        AVSpeechUtterance *utterance = [AVSpeechUtterance speechUtteranceWithString:articleContent];
+        utterance.rate = AVSpeechUtteranceDefaultSpeechRate - (AVSpeechUtteranceDefaultSpeechRate*0.4);
+        utterance.postUtteranceDelay = 0.2;
+        utterance.preUtteranceDelay = 0.2;
+        [self.synth speakUtterance:utterance];
+    }else{
+        CLTArticle * article = self.playlist[index];
+        
+        NSString * articleContent = [NSString stringWithFormat:@"%@, %@", article.title, article.content];
+        AVSpeechUtterance *utterance = [AVSpeechUtterance speechUtteranceWithString:articleContent];
+        utterance.rate = AVSpeechUtteranceDefaultSpeechRate - (AVSpeechUtteranceDefaultSpeechRate*0.4);
+        utterance.postUtteranceDelay = 0.2;
+        utterance.preUtteranceDelay = 0.2;
+        [self.synth speakUtterance:utterance];
+        [self updateNowPlayingWithArticle:article];
+    }
 }
 
 -(void)updateNowPlayingWithArticle:(CLTArticle *) article{
@@ -94,29 +134,29 @@ static CLTAudioManager * sharedInstance;
     [[MPNowPlayingInfoCenter defaultCenter] setNowPlayingInfo:mediaInfo];
 }
 
--(id)init{
-    if (self = [super init]) {
-        [self setup];
+- (void)receivedEvent:(CLTAudioManagerEventType)receivedEvent{
+    switch (receivedEvent) {
+        case CLTAudioManagerEventPause:
+            [self pause];
+            break;
+        case CLTAudioManagerEventPlay:
+            [self play];
+            break;
+//        case UIEventSubtypeRemoteControlTogglePlayPause:
+//            [self playPause];
+//            break;
+            
+        case CLTAudioManagerEventPrevious:
+            [self previous];
+            break;
+            
+        case CLTAudioManagerEventNext:
+            [self next];
+            break;
+            
+        default:
+            break;
     }
-    return self;
-}
-
--(void)setup{
-    self.shouldProceed = YES;
-    
-    // set up our audio session
-    self.session = [AVAudioSession sharedInstance];
-    
-    [self.session setCategory:AVAudioSessionCategoryPlayback error:nil];
-    
-    // set up our TTS synth
-    self.synth = [[AVSpeechSynthesizer alloc] init];
-    self.synth.delegate = self;
-    
-    self.audioPlayer = [[AVAudioPlayer alloc] init];
-    
-    [[AVAudioSession sharedInstance] setActive: YES error: nil];
-    //    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategorySoloAmbient withOptions:AVAudioSessionCategoryOptionDuckOthers error:nil];
 }
 
 - (void)remoteControlReceivedWithEvent:(UIEvent *)receivedEvent {
@@ -148,6 +188,15 @@ static CLTAudioManager * sharedInstance;
     }
 }
 
+-(void)play{
+    if ([self.synth isPaused]) {
+        [self.synth continueSpeaking];
+    }else{
+        self.currentArticle = 0;
+        [self speakArticleAtIndex:0];
+    }
+}
+
 -(void)playPause{
     if (self.synth.isSpeaking && ![self.synth isPaused]) {
         [self pause];
@@ -174,30 +223,40 @@ static CLTAudioManager * sharedInstance;
     }
 }
 
+-(void)stopAndProceed{
+    if ([self.synth isSpeaking] || [self.synth isPaused]) {
+        [self stop];
+    }else{
+        [self speakArticleAtIndex:self.currentArticle];
+    }
+}
+
 -(void)previous{
     self.currentArticle--;
-    if (!self.playlist || self.currentArticle <= 0) {
+    if (!self.playlist || self.currentArticle < 0) {
         self.atBeginning = YES;
+        [self stopAndProceed];
         return;
     }
     self.shouldProceed = NO;
-    [self stop];
+    [self stopAndProceed];
 }
 
 -(void)next{
     self.currentArticle++;
     if (self.currentArticle >= self.playlist.count ) {
         self.atEnd = YES;
+        [self stopAndProceed];
     }
-    [self stop];
+    [self stopAndProceed];
 }
 
 -(void)stop{
     if (self.synth.speaking) {
         if ([self.synth stopSpeakingAtBoundary:AVSpeechBoundaryImmediate]) {
-            NSLog(@"did stop ");
+            NSLog(@"did stop");
         } else {
-            NSLog(@"did not stop ");
+            NSLog(@"did not stop");
             [self speakArticleAtIndex:self.currentArticle];
             double delayInSeconds = 0.01;
             dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
@@ -209,18 +268,23 @@ static CLTAudioManager * sharedInstance;
 }
 
 - (void)speechSynthesizer:(AVSpeechSynthesizer *)synthesizer didStartSpeechUtterance:(AVSpeechUtterance *)utterance{
-    
+    if (utterance.speechString.length >= 20) {
+        NSLog(@"did start %@", [utterance.speechString substringToIndex:20]);
+    }else{
+        NSLog(@"did start %@", utterance.speechString);
+    }
 }
 
 - (void)speechSynthesizer:(AVSpeechSynthesizer *)synthesizer didFinishSpeechUtterance:(AVSpeechUtterance *)utterance{
-    NSLog(@"did finish %@", [utterance.speechString substringToIndex:20]);
+    if (utterance.speechString.length >= 20) {
+        NSLog(@"did finish %@", [utterance.speechString substringToIndex:20]);
+    }else{
+        NSLog(@"did finish %@", utterance.speechString);
+    }
     if (self.currentArticle < 0 || self.currentArticle >= self.playlist.count) {
         return;
     }
-    if (self.shouldProceed) {
-        self.currentArticle++;
-    }
-    if (self.currentArticle >= self.playlist.count ) {
+    if (self.currentArticle >= self.playlist.count) {
         self.atEnd = YES;
         return;
     }
@@ -228,25 +292,35 @@ static CLTAudioManager * sharedInstance;
         [self speakArticleAtIndex:self.currentArticle];
     }
     self.shouldProceed = YES;
+    self.atBeginning = NO;
+    self.atEnd = NO;
 }
 
 - (void)speechSynthesizer:(AVSpeechSynthesizer *)synthesizer didPauseSpeechUtterance:(AVSpeechUtterance *)utterance{
-    NSLog(@"did pause %@", [utterance.speechString substringToIndex:20]);
-    
+    if (utterance.speechString.length >= 20) {
+        NSLog(@"did pause %@", [utterance.speechString substringToIndex:20]);
+    }else{
+        NSLog(@"did pause %@", utterance.speechString);
+    }
 }
 
 - (void)speechSynthesizer:(AVSpeechSynthesizer *)synthesizer didContinueSpeechUtterance:(AVSpeechUtterance *)utterance{
-    NSLog(@"did continue %@", [utterance.speechString substringToIndex:20]);
-    
+    if (utterance.speechString.length >= 20) {
+        NSLog(@"did continue %@", [utterance.speechString substringToIndex:20]);
+    }else{
+        NSLog(@"did continue %@", utterance.speechString);
+    }
 }
 
 - (void)speechSynthesizer:(AVSpeechSynthesizer *)synthesizer didCancelSpeechUtterance:(AVSpeechUtterance *)utterance{
-    NSLog(@"did cancel %@", [utterance.speechString substringToIndex:20]);
+    if (utterance.speechString.length >= 20) {
+        NSLog(@"did cancel %@", [utterance.speechString substringToIndex:20]);
+    }else{
+        NSLog(@"did cancel %@", utterance.speechString);
+    }
+    
     if (self.currentArticle < 0 || self.currentArticle >= self.playlist.count) {
         return;
-    }
-    if (self.shouldProceed) {
-        self.currentArticle++;
     }
     if (self.currentArticle >= self.playlist.count ) {
         self.atEnd = YES;
@@ -256,6 +330,8 @@ static CLTAudioManager * sharedInstance;
         [self speakArticleAtIndex:self.currentArticle];
     }
     self.shouldProceed = YES;
+    self.atBeginning = NO;
+    self.atEnd = NO;
 }
 
 - (void)speechSynthesizer:(AVSpeechSynthesizer *)synthesizer willSpeakRangeOfSpeechString:(NSRange)characterRange utterance:(AVSpeechUtterance *)utterance{

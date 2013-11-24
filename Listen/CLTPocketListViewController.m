@@ -42,6 +42,11 @@
     UIBarButtonItem * refreshItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(refresh)];
     self.navigationItem.rightBarButtonItem = refreshItem;
     
+    UIBarButtonItem * previousItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRewind target:self action:@selector(previous)];
+    UIBarButtonItem * playItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPlay target:self action:@selector(play:)];
+    UIBarButtonItem * nextItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFastForward target:self action:@selector(next)];
+    self.navigationItem.leftBarButtonItems = @[previousItem, playItem, nextItem];
+    
 	// Do any additional setup after loading the view, typically from a nib.
     if (![PocketAPI sharedAPI].loggedIn) {
         [[PocketAPI sharedAPI] loginWithHandler: ^(PocketAPI *API, NSError *error){
@@ -65,6 +70,7 @@
     else if ([CLTArticleManager hasBeenPersisted]) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^(){
             self.articleArray = [[CLTArticleManager shared] localArticlesSortedByDate];
+            [[CLTAudioManager shared] setPlaylist:[self.articleArray mutableCopy]];
             dispatch_async(dispatch_get_main_queue(), ^(){
                 [[self tableView] reloadData];
             });
@@ -89,12 +95,37 @@
 -(void)refresh{
     [[CLTArticleManager shared] fetchUnreadArticlesSinceLastFetchWithSuccess:^(){
         self.articleArray = [[CLTArticleManager shared] localArticlesSortedByDate];
+        [[CLTAudioManager shared] setPlaylist:[self.articleArray mutableCopy]];
         dispatch_async(dispatch_get_main_queue(), ^(){
             [[self tableView] reloadData];
         });
     } andFailure:^(AFHTTPRequestOperation * operation, NSError * error){
 
     }];
+}
+
+-(void)play:(UIBarButtonItem *)sender{
+    [[CLTAudioManager shared] receivedEvent:CLTAudioManagerEventPlay];
+    UIBarButtonItem * previousItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRewind target:self action:@selector(previous)];
+    UIBarButtonItem * playItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPause target:self action:@selector(pause:)];
+    UIBarButtonItem * nextItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFastForward target:self action:@selector(next)];
+    self.navigationItem.leftBarButtonItems = @[previousItem, playItem, nextItem];
+}
+
+-(void)pause:(UIBarButtonItem *)sender{
+    [[CLTAudioManager shared] receivedEvent:CLTAudioManagerEventPause];
+    UIBarButtonItem * previousItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRewind target:self action:@selector(previous)];
+    UIBarButtonItem * playItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPlay target:self action:@selector(play:)];
+    UIBarButtonItem * nextItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFastForward target:self action:@selector(next)];
+    self.navigationItem.leftBarButtonItems = @[previousItem, playItem, nextItem];
+}
+
+-(void)next{
+    [[CLTAudioManager shared] receivedEvent:CLTAudioManagerEventNext];
+}
+
+-(void)previous{
+    [[CLTAudioManager shared] receivedEvent:CLTAudioManagerEventPrevious];
 }
 
 -(void)pocketLoginStarted:(NSNotification *)notification{
@@ -122,7 +153,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
 
-    [[CLTAudioManager shared] setCurrentArticle:indexPath.row];
+    [[CLTAudioManager shared] setArticleAtIndex:indexPath.row];
     
     CLTArticle * article = [self.articleArray objectAtIndex:indexPath.row];
     NSString * urlString = [NSString stringWithFormat:@"http://www.readability.com/m?url=%@", article.URL];
