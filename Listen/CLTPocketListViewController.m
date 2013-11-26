@@ -93,10 +93,12 @@
 }
 
 -(void)refresh{
+    [self showLoading:YES];
     [[CLTArticleManager shared] fetchUnreadArticlesSinceLastFetchWithSuccess:^(){
         self.articleArray = [[CLTArticleManager shared] localArticlesSortedByDate];
         [[CLTAudioManager shared] setPlaylist:[self.articleArray mutableCopy]];
         dispatch_async(dispatch_get_main_queue(), ^(){
+            [self showLoading:NO];
             [[self tableView] reloadData];
         });
     } andFailure:^(AFHTTPRequestOperation * operation, NSError * error){
@@ -104,20 +106,45 @@
     }];
 }
 
--(void)play:(UIBarButtonItem *)sender{
-    [[CLTAudioManager shared] receivedEvent:CLTAudioManagerEventPlay];
+-(void)showLoading:(BOOL)loading{
+
+    UIBarButtonItem *rightBarButtonItem = nil;
+    
+    if (loading) {
+        UIActivityIndicatorView * activityView = [[UIActivityIndicatorView alloc] initWithFrame:CGRectMake(0, 0, 25, 25)];
+        [activityView setColor:[UIColor redColor]];
+        [activityView sizeToFit];
+        [activityView setAutoresizingMask:(UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin)];
+        [activityView startAnimating];
+        rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:activityView];
+    }else{
+        rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(refresh)];
+
+    }
+    [self.navigationItem setRightBarButtonItem:rightBarButtonItem];
+}
+
+-(void)swapToPlayButton:(BOOL)playButtonOrPause{
     UIBarButtonItem * previousItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRewind target:self action:@selector(previous)];
-    UIBarButtonItem * playItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPause target:self action:@selector(pause:)];
+    UIBarButtonItem * playItem = nil;
+    
+    if (playButtonOrPause) {
+        playItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPlay target:self action:@selector(play:)];
+    }else{
+        playItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPause target:self action:@selector(pause:)];
+    }
     UIBarButtonItem * nextItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFastForward target:self action:@selector(next)];
     self.navigationItem.leftBarButtonItems = @[previousItem, playItem, nextItem];
 }
 
+-(void)play:(UIBarButtonItem *)sender{
+    [[CLTAudioManager shared] receivedEvent:CLTAudioManagerEventPlay];
+    [self swapToPlayButton:NO];
+}
+
 -(void)pause:(UIBarButtonItem *)sender{
     [[CLTAudioManager shared] receivedEvent:CLTAudioManagerEventPause];
-    UIBarButtonItem * previousItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRewind target:self action:@selector(previous)];
-    UIBarButtonItem * playItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPlay target:self action:@selector(play:)];
-    UIBarButtonItem * nextItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFastForward target:self action:@selector(next)];
-    self.navigationItem.leftBarButtonItems = @[previousItem, playItem, nextItem];
+    [self swapToPlayButton:YES];
 }
 
 -(void)next{
@@ -153,7 +180,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
 
-    [[CLTAudioManager shared] setArticleAtIndex:indexPath.row];
+    [[CLTAudioManager shared] setArticleAtIndex:(int)indexPath.row];
     
     CLTArticle * article = [self.articleArray objectAtIndex:indexPath.row];
     NSString * urlString = [NSString stringWithFormat:@"http://www.readability.com/m?url=%@", article.URL];
