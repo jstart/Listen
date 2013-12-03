@@ -11,6 +11,8 @@
 #import <JSONKit/JSONKit.h>
 #import <Block-KVO/NSObject+MTKObserving.h>
 #import "NSString+HTML.h"
+#import "CLTReadabilityResponseSerializer.h"
+#import "CLTDiffbotResponseSerializer.h"
 
 @interface CLTArticleManager()
 
@@ -28,14 +30,14 @@ static CLTArticleManager * sharedInstance;
 }
 
 + (id)shared {
-    if ([CLTArticleManager hasBeenPersisted]) {
-        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-        NSString *documentsDirectory = [paths objectAtIndex:0];
-        NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:@"CLTArticleManager"];
-        NSData * data = [NSData dataWithContentsOfFile:dataPath];
-        sharedInstance = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-    }else{
-        if (!sharedInstance) {
+    if (!sharedInstance) {
+        if ([CLTArticleManager hasBeenPersisted]) {
+            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+            NSString *documentsDirectory = [paths objectAtIndex:0];
+            NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:@"CLTArticleManager"];
+            NSData * data = [NSData dataWithContentsOfFile:dataPath];
+            sharedInstance = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+        }else{
             static dispatch_once_t onceToken;
             dispatch_once(&onceToken, ^{
                 sharedInstance = [[CLTArticleManager alloc] init];
@@ -44,6 +46,8 @@ static CLTArticleManager * sharedInstance;
                 sharedInstance.localReadArticles = [NSMutableArray array];
             });
         }
+    }else if(sharedInstance){
+        return sharedInstance;
     }
     return sharedInstance;
 }
@@ -71,6 +75,11 @@ static CLTArticleManager * sharedInstance;
     [data writeToFile:dataPath atomically:YES];
 }
 
+- (CLTArticle *)articleForURLString:(NSString *)URLString{
+    NSArray * resultsArray = [[self localArticles] filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"URL == %@", URLString]];
+    return [resultsArray firstObject];
+}
+
 - (NSArray *)localArticlesSortedByDate{
     return [[self localArticles] sortedArrayUsingComparator:^(CLTArticle * article1, CLTArticle * article2){
         return [article2.date compare:article1.date];
@@ -91,15 +100,11 @@ static CLTArticleManager * sharedInstance;
         [batchArray addObject:@{@"method": @"GET", @"relative_url" : encodedURLString, @"fields": @"*"}];
     }
     AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+    manager.responseSerializer = [CLTDiffbotResponseSerializer serializer];
 
     [manager POST:@"http://www.diffbot.com/api/batch" parameters:@{@"token": @"3519ab8183e8c4b04be634054ac0effe", @"batch": [batchArray JSONString]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        for (int i = 0; i < [responseObject count]; i++) {
-            NSDictionary * diffbotDictionary = [responseObject[i][@"body"] objectFromJSONString];
-
-            NSArray * filteredArticles = [articles filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"URL == %@", diffbotDictionary[@"url"]]];
-            [[filteredArticles firstObject] updateArticleFromDictionary:diffbotDictionary];
-        }
-        self.localArticles = [articles mutableCopy];
+        
+        self.localArticles = [responseObject mutableCopy];
         success();
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error: %@", error);
@@ -109,6 +114,7 @@ static CLTArticleManager * sharedInstance;
 
 -(void)RD_parseArticles:(NSArray *) articles WithSuccess:(void(^)()) success andFailure:(void(^)()) failure {
     AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+    manager.responseSerializer = [CLTReadabilityResponseSerializer serializer];
     NSMutableArray * operationArray = [NSMutableArray array];
     for (CLTArticle * article in articles) {
         if (!article.URL) {
@@ -117,11 +123,7 @@ static CLTArticleManager * sharedInstance;
         NSMutableURLRequest *request = [manager.requestSerializer requestWithMethod:@"GET" URLString:[[NSURL URLWithString:@"https://www.readability.com/api/content/v1/parser" relativeToURL:manager.baseURL] absoluteString] parameters:@{@"token": @"a14cf32527d3837c4385d8c39f080bc1927b58ee", @"url": article.URL}];
 
         NSOperation * op = [manager HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSString * content = responseObject[@"content"];
-            content = [[content kv_decodeHTMLCharacterEntities] kv_stripXMLTags];
-            article.content = content;
-            [article updateArticleFromDictionary:responseObject];
-            [self.localArticles addObject:article];
+            
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Error: %@", error);
             failure();
@@ -157,6 +159,8 @@ static CLTArticleManager * sharedInstance;
                                                  CLTArticle * article = [CLTArticle createArticleFromDictionary:pocketDictionary];
                                                  [articles addObject:article];
                                              }
+                                             self.localArticles = articles;
+                                             
                                              [self RD_parseArticles:articles WithSuccess:^(){
                                                  success();
                                              } andFailure:^(){

@@ -26,6 +26,8 @@ typedef void (^CLTArticleManagerFailure)(AFHTTPRequestOperation *operation, NSEr
 
 - (NSArray *)localArticlesSortedByDate;
 
+- (CLTArticle *)articleForURLString:(NSString *)URLString;
+
 - (void)fetchUnreadArticlesSinceLastFetchWithSuccess:(CLTArticleManagerSuccess) success andFailure:(CLTArticleManagerFailure) failure;
 
 - (void)fetchReadArticlesSinceLastFetchWithSuccess:(CLTArticleManagerSuccess) success andFailure:(CLTArticleManagerFailure) failure;

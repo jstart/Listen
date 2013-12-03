@@ -1,5 +1,5 @@
 //
-//  CLTPocketListViewController.m
+//  CLTPocketListViewController_iPad.m
 //  Listen
 //
 //  Created by Christopher Truman on 10/28/13.
@@ -7,7 +7,7 @@
 //
 @import MediaPlayer;
 @import AVFoundation;
-#import "CLTPocketListViewController.h"
+#import "CLTPocketListViewController_iPad.h"
 #import <PocketAPI/PocketAPI.h>
 #import <AFNetworking/AFHTTPRequestOperationManager.h>
 #import <JSONKit/JSONKit.h>
@@ -17,13 +17,13 @@
 #import "CLTArticleManager.h"
 #import "CLTAudioManager.h"
 
-@interface CLTPocketListViewController () <CLTAudioManagerDelegate>
+@interface CLTPocketListViewController_iPad () <CLTAudioManagerDelegate>
 
 @property (strong, nonatomic) NSArray * articleArray;
 
 @end
 
-@implementation CLTPocketListViewController
+@implementation CLTPocketListViewController_iPad
 
 - (void)viewDidLoad
 {
@@ -68,13 +68,11 @@
         }];
     }
     else if ([CLTArticleManager hasBeenPersisted]) {
-        [self showLoading:YES];
         dispatch_async(dispatch_get_global_queue(0, 0), ^(){
             self.articleArray = [[CLTArticleManager shared] localArticlesSortedByDate];
             [[CLTAudioManager shared] setPlaylist:[self.articleArray mutableCopy]];
             dispatch_async(dispatch_get_main_queue(), ^(){
                 [[self tableView] reloadData];
-                [self showLoading:NO];
             });
         });
      }
@@ -96,38 +94,18 @@
 }
 
 -(void)refresh{
-    [self showLoading:YES];
     [[CLTArticleManager shared] fetchUnreadArticlesSinceLastFetchWithSuccess:^(){
         self.articleArray = [[CLTArticleManager shared] localArticlesSortedByDate];
         [[CLTAudioManager shared] setPlaylist:[self.articleArray mutableCopy]];
         dispatch_async(dispatch_get_main_queue(), ^(){
             [[self tableView] reloadData];
-            [self showLoading:NO];
         });
     } andFailure:^(AFHTTPRequestOperation * operation, NSError * error){
 
     }];
 }
 
--(void)showLoading:(BOOL)isLoading{
-    if (isLoading) {
-        UIActivityIndicatorView * activityView = [[UIActivityIndicatorView alloc] initWithFrame:CGRectMake(0, 0, 25, 25)];
-        [activityView setColor:[UIColor redColor]];
-        [activityView startAnimating];
-//        [activityView sizeToFit];
-//        [activityView setAutoresizingMask:(UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin)];
-        UIBarButtonItem *loadingView = [[UIBarButtonItem alloc] initWithCustomView:activityView];
-        [self.navigationItem setRightBarButtonItem:loadingView];
-    }else{
-        UIActivityIndicatorView * activityView = (UIActivityIndicatorView *)[self.navigationItem rightBarButtonItem].customView;
-        [activityView stopAnimating];
-        
-        UIBarButtonItem * refreshItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(refresh)];
-        [self.navigationItem setRightBarButtonItem:refreshItem];
-    }
-}
-
-#pragma mark -
+#pragma mark - 
 #pragma CLTAudioManagerDelegate
 -(void)didSelectArticleAtIndex:(int)currentArticle{
     [self.tableView selectRowAtIndexPath:[NSIndexPath indexPathForRow:currentArticle inSection:0] animated:YES scrollPosition:UITableViewScrollPositionMiddle];
@@ -211,12 +189,15 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
 
-    [[CLTAudioManager shared] setArticleAtIndex:(int)indexPath.row];
+    [[CLTAudioManager shared] setArticleAtIndex:indexPath.row];
     
     CLTArticle * article = [self.articleArray objectAtIndex:indexPath.row];
     NSString * urlString = [NSString stringWithFormat:@"http://www.readability.com/m?url=%@", article.URL];
-    CLTWebViewController * webViewController = [[CLTWebViewController alloc] initWithAddress:urlString];
-    [self.navigationController pushViewController:webViewController animated:YES];
+    UINavigationController * detailNavigationViewController = self.splitViewController.childViewControllers[1];
+    
+    CLTWebViewController * webViewController = (CLTWebViewController*)detailNavigationViewController.topViewController;
+    [webViewController setTitle:article.title];
+    [webViewController loadURL:[NSURL URLWithString:urlString]];
 }
 
 - (void)didReceiveMemoryWarning

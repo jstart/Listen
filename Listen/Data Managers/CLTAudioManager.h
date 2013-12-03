@@ -13,7 +13,19 @@ typedef enum {
     CLTAudioManagerEventNext
     } CLTAudioManagerEventType;
 
+@protocol CLTAudioManagerDelegate <NSObject>
+
+@required
+
+-(void)didRecieveAudioEvent:(CLTAudioManagerEventType)audioEvent;
+
+-(void)didSelectArticleAtIndex:(int)currentArticle;
+
+@end
+
 @interface CLTAudioManager : NSObject
+
+@property (nonatomic, strong) id <CLTAudioManagerDelegate> delegate;
 
 + (id)shared;
 
