@@ -20,57 +20,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Listen/Data Managers/CLTArticleManager.m"
-            timestampString = "406889088.70973"
+            timestampString = "406975825.744429"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "169"
-            endingLineNumber = "169"
-            landmarkName = "-fetchUnreadArticlesSinceLastFetchWithSuccess:andFailure:"
+            startingLineNumber = "136"
+            endingLineNumber = "136"
+            landmarkName = "-RD_parseArticles:WithSuccess:andFailure:"
             landmarkType = "5">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "__77-[CLTArticleManager fetchUnreadArticlesSinceLastFetchWithSuccess:andFailure:]_block_invoke_2"
-                  moduleName = "Listen"
-                  urlString = "file:///Users/christophertruman/Desktop/Listen/Listen/Data%20Managers/CLTArticleManager.m"
-                  timestampString = "406890086.352955"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "169"
-                  endingLineNumber = "169"
-                  offsetFromSymbolStart = "1464">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "__copy_helper_block_229"
-                  moduleName = "Listen"
-                  urlString = "file:///Users/christophertruman/Desktop/Listen/Listen/Data%20Managers/CLTArticleManager.m"
-                  timestampString = "406890086.354533"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "169"
-                  endingLineNumber = "169"
-                  offsetFromSymbolStart = "20">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "__destroy_helper_block_230"
-                  moduleName = "Listen"
-                  urlString = "file:///Users/christophertruman/Desktop/Listen/Listen/Data%20Managers/CLTArticleManager.m"
-                  timestampString = "406890086.354828"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "169"
-                  endingLineNumber = "169"
-                  offsetFromSymbolStart = "17">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
