@@ -68,11 +68,13 @@
         }];
     }
     else if ([CLTArticleManager hasBeenPersisted]) {
+        [self showLoading:YES];
         dispatch_async(dispatch_get_global_queue(0, 0), ^(){
             self.articleArray = [[CLTArticleManager shared] localArticlesSortedByDate];
             [[CLTAudioManager shared] setPlaylist:[self.articleArray mutableCopy]];
             dispatch_async(dispatch_get_main_queue(), ^(){
                 [[self tableView] reloadData];
+                [self showLoading:NO];
             });
         });
      }
@@ -94,15 +96,32 @@
 }
 
 -(void)refresh{
+    [self showLoading:YES];
     [[CLTArticleManager shared] fetchUnreadArticlesSinceLastFetchWithSuccess:^(){
         self.articleArray = [[CLTArticleManager shared] localArticlesSortedByDate];
         [[CLTAudioManager shared] setPlaylist:[self.articleArray mutableCopy]];
         dispatch_async(dispatch_get_main_queue(), ^(){
             [[self tableView] reloadData];
+            [self showLoading:NO];
         });
     } andFailure:^(AFHTTPRequestOperation * operation, NSError * error){
 
     }];
+}
+
+-(void)showLoading:(BOOL)loading{
+    UIBarButtonItem *rightBarButtonItem = nil;
+    
+    if (loading) {
+        UIActivityIndicatorView * activityView = [[UIActivityIndicatorView alloc] initWithFrame:CGRectMake(0, 0, 25, 25)];
+        [activityView setColor:[UIColor redColor]];
+        [activityView startAnimating];
+        rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:activityView];
+    }else{
+        rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(refresh)];
+        
+    }
+    [self.navigationItem setRightBarButtonItem:rightBarButtonItem];
 }
 
 #pragma mark - 
