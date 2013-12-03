@@ -98,18 +98,18 @@ static CLTAudioManager * sharedInstance;
         NSString * articleContent = @"";
         AVSpeechUtterance *utterance = [AVSpeechUtterance speechUtteranceWithString:articleContent];
         utterance.voice = [AVSpeechSynthesisVoice voiceWithLanguage:@"en-AU"];
-        utterance.rate = AVSpeechUtteranceDefaultSpeechRate - (AVSpeechUtteranceDefaultSpeechRate*0.4);
-        utterance.postUtteranceDelay = 0.2;
-        utterance.preUtteranceDelay = 0.2;
+        utterance.rate = AVSpeechUtteranceDefaultSpeechRate - (AVSpeechUtteranceDefaultSpeechRate*0.5);
+        utterance.postUtteranceDelay = 0.3;
+        utterance.preUtteranceDelay = 0.3;
         [self.synth speakUtterance:utterance];
     }else{
         CLTArticle * article = self.playlist[index];
         NSString * articleContent = [NSString stringWithFormat:@"%@, %@", article.title, article.content];
         AVSpeechUtterance *utterance = [AVSpeechUtterance speechUtteranceWithString:articleContent];
         utterance.voice = [AVSpeechSynthesisVoice voiceWithLanguage:@"en-AU"];
-        utterance.rate = AVSpeechUtteranceDefaultSpeechRate - (AVSpeechUtteranceDefaultSpeechRate*0.4);
-        utterance.postUtteranceDelay = 0.2;
-        utterance.preUtteranceDelay = 0.2;
+        utterance.rate = AVSpeechUtteranceDefaultSpeechRate - (AVSpeechUtteranceDefaultSpeechRate*0.5);
+        utterance.postUtteranceDelay = 0.3;
+        utterance.preUtteranceDelay = 0.3;
         [self.synth speakUtterance:utterance];
         [self updateNowPlayingWithArticle:article];
     }
@@ -254,7 +254,11 @@ static CLTAudioManager * sharedInstance;
 }
 
 -(void)next{
-    self.currentArticle++;
+    if (self.currentArticle < self.playlist.count - 1 ) {
+        self.currentArticle++;
+    }else{
+        self.atEnd = YES;
+    }
     if (self.currentArticle >= self.playlist.count ) {
         self.atEnd = YES;
         [self stopAndProceed];
