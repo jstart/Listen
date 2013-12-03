@@ -123,17 +123,6 @@ static CLTArticleManager * sharedInstance;
         NSMutableURLRequest *request = [manager.requestSerializer requestWithMethod:@"GET" URLString:[[NSURL URLWithString:@"https://www.readability.com/api/content/v1/parser" relativeToURL:manager.baseURL] absoluteString] parameters:@{@"token": @"a14cf32527d3837c4385d8c39f080bc1927b58ee", @"url": article.URL}];
 
         NSOperation * op = [manager HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
-<<<<<<< HEAD
-            
-=======
-             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(){
-                NSString * content = responseObject[@"content"];
-                content = [[content kv_decodeHTMLCharacterEntities] kv_stripXMLTags];
-                article.content = content;
-                [article updateArticleFromDictionary:responseObject];
-                [self.localArticles addObject:article];
-             });
->>>>>>> 0693812a08b6a4f648b0e74142a83d49945050ad
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Error: %@", error);
             failure();

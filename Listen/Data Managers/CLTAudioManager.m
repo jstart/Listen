@@ -104,8 +104,6 @@ static CLTAudioManager * sharedInstance;
         [self.synth speakUtterance:utterance];
     }else{
         CLTArticle * article = self.playlist[index];
-        NSLog(@"%@", [AVSpeechSynthesisVoice speechVoices]);
-
         NSString * articleContent = [NSString stringWithFormat:@"%@, %@", article.title, article.content];
         AVSpeechUtterance *utterance = [AVSpeechUtterance speechUtteranceWithString:articleContent];
         utterance.voice = [AVSpeechSynthesisVoice voiceWithLanguage:@"en-AU"];
@@ -241,7 +239,11 @@ static CLTAudioManager * sharedInstance;
 }
 
 -(void)previous{
-    self.currentArticle--;
+    if (self.currentArticle > 0 ) {
+        self.currentArticle--;
+    }else{
+        self.atBeginning = YES;
+    }
     if (!self.playlist || self.currentArticle < 0) {
         self.atBeginning = YES;
         [self stopAndProceed];
@@ -271,6 +273,7 @@ static CLTAudioManager * sharedInstance;
             double delayInSeconds = 0.01;
             dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
             dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                self.shouldProceed = NO;
                 [self.synth stopSpeakingAtBoundary:AVSpeechBoundaryImmediate];
             });
         }
@@ -307,7 +310,7 @@ static CLTAudioManager * sharedInstance;
         self.atEnd = YES;
         return;
     }
-    if (self.playlist && !self.atEnd && !self.atBeginning) {
+    if (self.playlist && !self.atEnd && !self.atBeginning && self.shouldProceed) {
         [self speakArticleAtIndex:self.currentArticle];
     }
     self.shouldProceed = YES;

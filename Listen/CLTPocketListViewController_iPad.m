@@ -189,7 +189,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
 
-    [[CLTAudioManager shared] setArticleAtIndex:indexPath.row];
+    [[CLTAudioManager shared] setArticleAtIndex:(int)indexPath.row];
     
     CLTArticle * article = [self.articleArray objectAtIndex:indexPath.row];
     NSString * urlString = [NSString stringWithFormat:@"http://www.readability.com/m?url=%@", article.URL];

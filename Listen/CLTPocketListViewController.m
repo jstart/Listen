@@ -110,23 +110,20 @@
     }];
 }
 
-<<<<<<< HEAD
--(void)showLoading:(BOOL)isLoading{
-    if (isLoading) {
+-(void)showLoading:(BOOL)loading{
+    
+    UIBarButtonItem *rightBarButtonItem = nil;
+    
+    if (loading) {
         UIActivityIndicatorView * activityView = [[UIActivityIndicatorView alloc] initWithFrame:CGRectMake(0, 0, 25, 25)];
         [activityView setColor:[UIColor redColor]];
         [activityView startAnimating];
-//        [activityView sizeToFit];
-//        [activityView setAutoresizingMask:(UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin)];
-        UIBarButtonItem *loadingView = [[UIBarButtonItem alloc] initWithCustomView:activityView];
-        [self.navigationItem setRightBarButtonItem:loadingView];
+        rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:activityView];
     }else{
-        UIActivityIndicatorView * activityView = (UIActivityIndicatorView *)[self.navigationItem rightBarButtonItem].customView;
-        [activityView stopAnimating];
+        rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(refresh)];
         
-        UIBarButtonItem * refreshItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(refresh)];
-        [self.navigationItem setRightBarButtonItem:refreshItem];
     }
+    [self.navigationItem setRightBarButtonItem:rightBarButtonItem];
 }
 
 #pragma mark -
@@ -145,10 +142,10 @@
 -(void)didRecieveAudioEvent:(CLTAudioManagerEventType)audioEvent{
     switch (audioEvent) {
         case CLTAudioManagerEventPlay:
-            [self updatePlayButton];
+            [self swapToPlayButton:NO];
             break;
         case CLTAudioManagerEventPause:
-            [self updatePauseButton];
+            [self swapToPlayButton:YES];
             break;
             
         default:
@@ -156,33 +153,7 @@
     }
 }
 
--(void)play:(UIBarButtonItem *)sender{
-    [[CLTAudioManager shared] receivedEvent:CLTAudioManagerEventPlay];
-    [self updatePlayButton];
-}
-
--(void)updatePlayButton{
-=======
--(void)showLoading:(BOOL)loading{
-
-    UIBarButtonItem *rightBarButtonItem = nil;
-    
-    if (loading) {
-        UIActivityIndicatorView * activityView = [[UIActivityIndicatorView alloc] initWithFrame:CGRectMake(0, 0, 25, 25)];
-        [activityView setColor:[UIColor redColor]];
-        [activityView sizeToFit];
-        [activityView setAutoresizingMask:(UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin)];
-        [activityView startAnimating];
-        rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:activityView];
-    }else{
-        rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(refresh)];
-
-    }
-    [self.navigationItem setRightBarButtonItem:rightBarButtonItem];
-}
-
 -(void)swapToPlayButton:(BOOL)playButtonOrPause{
->>>>>>> 0693812a08b6a4f648b0e74142a83d49945050ad
     UIBarButtonItem * previousItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRewind target:self action:@selector(previous)];
     UIBarButtonItem * playItem = nil;
     
@@ -202,7 +173,6 @@
 
 -(void)pause:(UIBarButtonItem *)sender{
     [[CLTAudioManager shared] receivedEvent:CLTAudioManagerEventPause];
-<<<<<<< HEAD
     [self updatePauseButton];
 }
 
@@ -211,9 +181,6 @@
     UIBarButtonItem * playItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPlay target:self action:@selector(play:)];
     UIBarButtonItem * nextItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFastForward target:self action:@selector(next)];
     self.navigationItem.leftBarButtonItems = @[previousItem, playItem, nextItem];
-=======
-    [self swapToPlayButton:YES];
->>>>>>> 0693812a08b6a4f648b0e74142a83d49945050ad
 }
 
 -(void)next{
