@@ -8,6 +8,16 @@
 #import "CLTArticle.h"
 #import <AFNetworking/AFNetworking.h>
 
+@protocol CLTArticleManagerDelegate <NSObject>
+
+@required
+
+-(void)didFetchArticle:(CLTArticle *)article;
+
+-(void)didParseArticle:(CLTArticle *)article;
+
+@end
+
 typedef void (^CLTArticleManagerSuccess)(void);
 typedef void (^CLTArticleManagerFailure)(AFHTTPRequestOperation *operation, NSError *error);
 
@@ -23,6 +33,8 @@ typedef void (^CLTArticleManagerFailure)(AFHTTPRequestOperation *operation, NSEr
 + (id)shared;
 
 - (void)persist;
+
+@property (nonatomic, strong) id <CLTArticleManagerDelegate> delegate;
 
 - (NSArray *)localArticlesSortedByDate;
 

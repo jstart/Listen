@@ -6,4 +6,5 @@ pod 'AFNetworking'
 pod 'JSONKit', :git => 'https://github.com/jstart/JSONKit.git'
 pod 'SVWebViewController', :head
 pod 'Block-KVO'
+pod 'UIColor-Utilities', '~> 1.0.1'
 

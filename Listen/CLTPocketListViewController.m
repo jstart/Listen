@@ -12,14 +12,15 @@
 #import <AFNetworking/AFHTTPRequestOperationManager.h>
 #import <JSONKit/JSONKit.h>
 #import <Block-KVO/NSObject+MTKObserving.h>
+#import <UIColor-Utilities/UIColor+Expanded.h>
 
 #import "CLTWebViewController.h"
 #import "CLTArticleManager.h"
 #import "CLTAudioManager.h"
 
-@interface CLTPocketListViewController () <CLTAudioManagerDelegate>
+@interface CLTPocketListViewController () <CLTAudioManagerDelegate, CLTArticleManagerDelegate>
 
-@property (strong, nonatomic) NSArray * articleArray;
+@property (strong, nonatomic) NSMutableArray * articleArray;
 
 @end
 
@@ -70,14 +71,16 @@
     else if ([CLTArticleManager hasBeenPersisted]) {
         [self showLoading:YES];
         dispatch_async(dispatch_get_global_queue(0, 0), ^(){
-            self.articleArray = [[CLTArticleManager shared] localArticlesSortedByDate];
+            self.articleArray = [[[CLTArticleManager shared] localArticlesSortedByDate] mutableCopy];
             [[CLTAudioManager shared] setPlaylist:[self.articleArray mutableCopy]];
             dispatch_async(dispatch_get_main_queue(), ^(){
                 [[self tableView] reloadData];
                 [self showLoading:NO];
             });
         });
-     }
+    }else{
+        self.articleArray = [NSMutableArray array];
+    }
 }
 
 -(void)viewDidAppear:(BOOL)animated{
@@ -85,6 +88,7 @@
     [[UIApplication sharedApplication] beginReceivingRemoteControlEvents];
     [self becomeFirstResponder];
     [[CLTAudioManager shared] setDelegate:self];
+    [[CLTArticleManager shared] setDelegate:self];
 }
 
 -(BOOL)canBecomeFirstResponder{
@@ -98,7 +102,7 @@
 -(void)refresh{
     [self showLoading:YES];
     [[CLTArticleManager shared] fetchUnreadArticlesSinceLastFetchWithSuccess:^(){
-        self.articleArray = [[CLTArticleManager shared] localArticlesSortedByDate];
+        self.articleArray = [[[CLTArticleManager shared] localArticlesSortedByDate] mutableCopy];
         [[CLTAudioManager shared] setPlaylist:[self.articleArray mutableCopy]];
         dispatch_async(dispatch_get_main_queue(), ^(){
             [self showLoading:NO];
@@ -116,7 +120,9 @@
     
     if (loading) {
         UIActivityIndicatorView * activityView = [[UIActivityIndicatorView alloc] initWithFrame:CGRectMake(0, 0, 25, 25)];
-        [activityView setColor:[UIColor redColor]];
+        [activityView sizeToFit];
+        [activityView setAutoresizingMask:(UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin)];
+        [activityView setColor:[UIColor colorWithHexString:@"1bb0f9"]];
         [activityView startAnimating];
         rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:activityView];
     }else{
@@ -124,6 +130,27 @@
         
     }
     [self.navigationItem setRightBarButtonItem:rightBarButtonItem];
+}   
+
+#pragma mark -
+#pragma CLTArticleManagerDelegate
+-(void)didFetchArticle:(CLTArticle *)article{
+    dispatch_async(dispatch_get_global_queue(0, 0), ^(){
+        [self.articleArray addObject:article];
+        self.articleArray = [[self.articleArray sortedArrayUsingComparator:^(CLTArticle * article1, CLTArticle * article2){
+            return [article2.date compare:article1.date];
+        }] mutableCopy];
+        [[CLTAudioManager shared] setPlaylist:self.articleArray];
+        dispatch_async(dispatch_get_main_queue(), ^(){
+            [self.tableView reloadData];
+        });
+    });
+}
+
+-(void)didParseArticle:(CLTArticle *)article{
+    if ([self.articleArray containsObject:article]) {
+        NSLog(@"Contains %@", article.title);
+    }
 }
 
 #pragma mark -
@@ -222,6 +249,29 @@
     NSString * urlString = [NSString stringWithFormat:@"http://www.readability.com/m?url=%@", article.URL];
     CLTWebViewController * webViewController = [[CLTWebViewController alloc] initWithAddress:urlString];
     [self.navigationController pushViewController:webViewController animated:YES];
+}
+
+- (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath{
+    return UITableViewCellEditingStyleDelete;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForDeleteConfirmationButtonForRowAtIndexPath:(NSIndexPath *)indexPath{
+    return @"Mark Read";
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath{
+    CLTArticle * article = self.articleArray[indexPath.row];
+    [[CLTArticleManager shared] markArticleRead:article withSuccess:^(){
+        
+    }andFailure:^(AFHTTPRequestOperation * operation, NSError * error){
+        
+    }];
+    [self.articleArray removeObjectAtIndex:indexPath.row];
+    [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationLeft];
+}
+
+- (BOOL)tableView:(UITableView *)tableView shouldIndentWhileEditingRowAtIndexPath:(NSIndexPath *)indexPath{
+    return YES;
 }
 
 - (void)didReceiveMemoryWarning

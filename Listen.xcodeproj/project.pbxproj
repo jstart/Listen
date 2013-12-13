@@ -15,7 +15,7 @@
 		239F0C06181F488200503170 /* CLTAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 239F0C05181F488200503170 /* CLTAppDelegate.m */; };
 		239F0C09181F488200503170 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 239F0C07181F488200503170 /* Main.storyboard */; };
 		239F0C0C181F488200503170 /* CLTPocketListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 239F0C0B181F488200503170 /* CLTPocketListViewController.m */; };
-		239F0C11181F488200503170 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 239F0C10181F488200503170 /* Images.xcassets */; };
+		239F0C11181F488200503170 /* LaunchImages.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 239F0C10181F488200503170 /* LaunchImages.xcassets */; };
 		239F0C18181F488200503170 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 239F0C17181F488200503170 /* XCTest.framework */; };
 		239F0C19181F488200503170 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 239F0BF5181F488200503170 /* Foundation.framework */; };
 		239F0C1A181F488200503170 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 239F0BF9181F488200503170 /* UIKit.framework */; };
@@ -32,6 +32,7 @@
 		7D2238E518474E4600F1E89E /* CLTDiffbotResponseSerializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D2238E418474E4600F1E89E /* CLTDiffbotResponseSerializer.m */; };
 		7D26DE501846CE2F00458C7B /* CLTPocketListViewController_iPad.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D26DE4F1846CE2F00458C7B /* CLTPocketListViewController_iPad.m */; };
 		7D29604B184404ED00A9FDD0 /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7D29604A184404ED00A9FDD0 /* Main_iPad.storyboard */; };
+		7DAF207F18514DE9004C2FAF /* AppIcon.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7DAF207E18514DE9004C2FAF /* AppIcon.xcassets */; };
 		E53373628C9D417D9F99C3DE /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1787A24CF3E341EE9F2D4512 /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -60,7 +61,7 @@
 		239F0C08181F488200503170 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		239F0C0A181F488200503170 /* CLTPocketListViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CLTPocketListViewController.h; sourceTree = "<group>"; };
 		239F0C0B181F488200503170 /* CLTPocketListViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CLTPocketListViewController.m; sourceTree = "<group>"; };
-		239F0C10181F488200503170 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		239F0C10181F488200503170 /* LaunchImages.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = LaunchImages.xcassets; sourceTree = "<group>"; };
 		239F0C16181F488200503170 /* ListenTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ListenTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		239F0C17181F488200503170 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		239F0C1F181F488200503170 /* ListenTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ListenTests-Info.plist"; sourceTree = "<group>"; };
@@ -86,6 +87,7 @@
 		7D26DE4E1846CE2F00458C7B /* CLTPocketListViewController_iPad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CLTPocketListViewController_iPad.h; sourceTree = "<group>"; };
 		7D26DE4F1846CE2F00458C7B /* CLTPocketListViewController_iPad.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CLTPocketListViewController_iPad.m; sourceTree = "<group>"; };
 		7D29604A184404ED00A9FDD0 /* Main_iPad.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main_iPad.storyboard; sourceTree = "<group>"; };
+		7DAF207E18514DE9004C2FAF /* AppIcon.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = AppIcon.xcassets; sourceTree = "<group>"; };
 		830FE6E0A8074FBBBF983428 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -162,7 +164,8 @@
 				7D26DE4F1846CE2F00458C7B /* CLTPocketListViewController_iPad.m */,
 				239F0C0A181F488200503170 /* CLTPocketListViewController.h */,
 				239F0C0B181F488200503170 /* CLTPocketListViewController.m */,
-				239F0C10181F488200503170 /* Images.xcassets */,
+				239F0C10181F488200503170 /* LaunchImages.xcassets */,
+				7DAF207E18514DE9004C2FAF /* AppIcon.xcassets */,
 				239F0BFC181F488200503170 /* Supporting Files */,
 			);
 			path = Listen;
@@ -335,8 +338,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7DAF207F18514DE9004C2FAF /* AppIcon.xcassets in Resources */,
 				239F0C2E181F494600503170 /* Pocket.plist in Resources */,
-				239F0C11181F488200503170 /* Images.xcassets in Resources */,
+				239F0C11181F488200503170 /* LaunchImages.xcassets in Resources */,
 				7D29604B184404ED00A9FDD0 /* Main_iPad.storyboard in Resources */,
 				239F0C00181F488200503170 /* InfoPlist.strings in Resources */,
 				239F0C09181F488200503170 /* Main.storyboard in Resources */,

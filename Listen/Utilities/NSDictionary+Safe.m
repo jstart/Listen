@@ -29,7 +29,7 @@
 -(NSNumber *)safeNumberForKey:(id)key{
     NSNumber * value = [self safeObjectForKey:key];
 
-    if (@([value integerValue])) {
+    if (@([value integerValue]) && value != nil) {
         return @([value integerValue]);
     }
     else if (![value isKindOfClass:[NSNumber class]]) {

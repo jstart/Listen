@@ -1,0 +1,46 @@
+PODS:
+  - AFNetworking (2.0.3):
+    - AFNetworking/NSURLConnection
+    - AFNetworking/NSURLSession
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+    - AFNetworking/UIKit
+  - AFNetworking/NSURLConnection (2.0.3):
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+  - AFNetworking/NSURLSession (2.0.3):
+    - AFNetworking/NSURLConnection
+  - AFNetworking/Reachability (2.0.3)
+  - AFNetworking/Security (2.0.3)
+  - AFNetworking/Serialization (2.0.3)
+  - AFNetworking/UIKit (2.0.3):
+    - AFNetworking/NSURLConnection
+  - Block-KVO (2.2.1)
+  - JSONKit (1.6)
+  - PocketAPI (1.0.2)
+  - SVWebViewController (HEAD based on 1.0)
+  - UIColor-Utilities (1.0.1)
+
+DEPENDENCIES:
+  - AFNetworking
+  - Block-KVO
+  - JSONKit (from `https://github.com/jstart/JSONKit.git`)
+  - PocketAPI (~> 1.0.2)
+  - SVWebViewController (HEAD)
+  - UIColor-Utilities (~> 1.0.1)
+
+EXTERNAL SOURCES:
+  JSONKit:
+    :git: https://github.com/jstart/JSONKit.git
+
+SPEC CHECKSUMS:
+  AFNetworking: e499052cbf3d743e9bb727bb37adb9dc2547ba15
+  Block-KVO: 7b298fb4617e948179b4c7725569feff7bd58337
+  JSONKit: 5e12713d047a7ab38f40b07a2d13fe9bc41e6bd1
+  PocketAPI: 2ed51391e6ea7a48c707528f782f5a2cb0eab80e
+  SVWebViewController: e576371f7015bce92c97c304c32336700064847b
+  UIColor-Utilities: a392783be1b72e5d5ad9ae450ef2280239441bc8
+
+COCOAPODS: 0.28.0

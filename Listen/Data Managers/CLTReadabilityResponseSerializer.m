@@ -23,7 +23,20 @@
     article.content = content;
     [article updateArticleFromDictionary:json];
 
+    if (article == nil) {
+        NSLog(@"%@", json[@"url"]);
+    }
     return article;
+}
+
+- (BOOL)validateResponse:(NSHTTPURLResponse *)response
+                    data:(NSData *)data
+                   error:(NSError *__autoreleasing *)error{
+    [super validateResponse:response data:data error:error];
+    if (error) {
+        return NO;
+    }
+    return YES;
 }
 
 

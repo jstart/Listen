@@ -76,7 +76,7 @@ static CLTArticleManager * sharedInstance;
 }
 
 - (CLTArticle *)articleForURLString:(NSString *)URLString{
-    NSArray * resultsArray = [[self localArticles] filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"URL == %@", URLString]];
+    NSArray * resultsArray = [[self localArticles] filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"(URL BEGINSWITH %@) OR (URL CONTAINS %@)", URLString, URLString]];
     return [resultsArray firstObject];
 }
 
@@ -104,7 +104,6 @@ static CLTArticleManager * sharedInstance;
 
     [manager POST:@"http://www.diffbot.com/api/batch" parameters:@{@"token": @"3519ab8183e8c4b04be634054ac0effe", @"batch": [batchArray JSONString]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         
-        self.localArticles = [responseObject mutableCopy];
         success();
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error: %@", error);
@@ -123,6 +122,9 @@ static CLTArticleManager * sharedInstance;
         NSMutableURLRequest *request = [manager.requestSerializer requestWithMethod:@"GET" URLString:[[NSURL URLWithString:@"https://www.readability.com/api/content/v1/parser" relativeToURL:manager.baseURL] absoluteString] parameters:@{@"token": @"a14cf32527d3837c4385d8c39f080bc1927b58ee", @"url": article.URL}];
 
         NSOperation * op = [manager HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            if (responseObject) {
+                [self.delegate didParseArticle:(CLTArticle *)responseObject];
+            }
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Error: %@", error);
             failure();
@@ -157,8 +159,9 @@ static CLTArticleManager * sharedInstance;
                                              for (NSDictionary * pocketDictionary in [response[@"list"] allValues]) {
                                                  CLTArticle * article = [CLTArticle createArticleFromDictionary:pocketDictionary];
                                                  [articles addObject:article];
+                                                 [self.delegate didFetchArticle:article];
                                              }
-                                             self.localArticles = articles;
+                                             [self.localArticles addObjectsFromArray:articles];
                                              
                                              [self RD_parseArticles:articles WithSuccess:^(){
                                                  success();
@@ -173,23 +176,122 @@ static CLTArticleManager * sharedInstance;
 }
 
 - (void)fetchReadArticlesSinceLastFetchWithSuccess:(CLTArticleManagerSuccess) success andFailure:(CLTArticleManagerFailure) failure{
-
+    NSString *apiMethod = @"get";
+    PocketAPIHTTPMethod httpMethod = PocketAPIHTTPMethodPOST;
+    NSMutableDictionary *arguments = [NSMutableDictionary dictionaryWithDictionary:@{@"consumer_key": [NSString stringWithFormat:@"%lu", (unsigned long)[PocketAPI sharedAPI].appID], @"detailType" : @"complete", @"contentType": @"article", @"sort":@"newest", @"state":@"archive"}];
+    if (self.since && self.localArticles.count > 0) {
+        [arguments setObject:self.since forKey:@"since"];
+    }
+    
+    [[PocketAPI sharedAPI] callAPIMethod:apiMethod
+                          withHTTPMethod:httpMethod
+                               arguments:arguments
+                                 handler:^(PocketAPI *api, NSString *apiMethod, NSDictionary *response, NSError *error){
+                                     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(){
+                                         self.since = response[@"since"];
+                                         if (![response[@"list"] isKindOfClass:[NSArray class]]) {
+                                             NSMutableArray * articles = [NSMutableArray array];
+                                             for (NSDictionary * pocketDictionary in [response[@"list"] allValues]) {
+                                                 CLTArticle * article = [CLTArticle createArticleFromDictionary:pocketDictionary];
+                                                 [articles addObject:article];
+                                                 [self.delegate didFetchArticle:article];
+                                             }
+                                             [self.localArticles addObjectsFromArray:articles];
+                                             
+                                             [self RD_parseArticles:articles WithSuccess:^(){
+                                                 success();
+                                             } andFailure:^(){
+                                                 failure(nil,nil);
+                                             }];
+                                         }else{
+                                             success();
+                                         }
+                                     });
+                                 }];
 }
 
 - (void)markArticleRead:(CLTArticle *)article withSuccess:(CLTArticleManagerSuccess) success andFailure:(CLTArticleManagerFailure) failure{
-
+    NSString *apiMethod = @"send";
+    PocketAPIHTTPMethod httpMethod = PocketAPIHTTPMethodPOST;
+    NSArray * actionArray = @[@{@"action": @"archive", @"item_id":article.articleID, @"time": [NSNumber numberWithInteger:[[NSDate date] timeIntervalSince1970]]}];
+    NSMutableDictionary *arguments = [NSMutableDictionary dictionaryWithDictionary:@{@"consumer_key": [NSString stringWithFormat:@"%lu", (unsigned long)[PocketAPI sharedAPI].appID], @"actions":actionArray}];
+    
+    [[PocketAPI sharedAPI] callAPIMethod:apiMethod
+                          withHTTPMethod:httpMethod
+                               arguments:arguments
+                                 handler:^(PocketAPI *api, NSString *apiMethod, NSDictionary *response, NSError *error){
+                                         if (error) {
+                                             failure(nil, error);
+                                         }else{
+                                             [self.localArticles removeObject:article];
+                                             success();
+                                         }
+                                 }];
 }
 
 - (void)markArticlesRead:(NSArray *)articles withSuccess:(CLTArticleManagerSuccess) success andFailure:(CLTArticleManagerFailure) failure{
-
+    NSString *apiMethod = @"send";
+    PocketAPIHTTPMethod httpMethod = PocketAPIHTTPMethodPOST;
+    NSMutableArray *actionArray  = [NSMutableArray array];
+    for (CLTArticle * article in articles) {
+        [actionArray addObject:@{@"action": @"archive", @"item_id":article.articleID, @"time": [NSNumber numberWithInteger:[[NSDate date] timeIntervalSince1970]]}];
+    }
+    
+    NSMutableDictionary *arguments = [NSMutableDictionary dictionaryWithDictionary:@{@"consumer_key": [NSString stringWithFormat:@"%lu", (unsigned long)[PocketAPI sharedAPI].appID], @"actions":actionArray}];
+    
+    [[PocketAPI sharedAPI] callAPIMethod:apiMethod
+                          withHTTPMethod:httpMethod
+                               arguments:arguments
+                                 handler:^(PocketAPI *api, NSString *apiMethod, NSDictionary *response, NSError *error){
+                                     if (error) {
+                                         failure(nil, error);
+                                     }else{
+                                         [self.localArticles removeObjectsInArray:articles];
+                                         success();
+                                     }
+                                 }];
 }
 
 - (void)deleteArticle:(CLTArticle *)article withSuccess:(CLTArticleManagerSuccess) success andFailure:(CLTArticleManagerFailure) failure{
-
+    NSString *apiMethod = @"send";
+    PocketAPIHTTPMethod httpMethod = PocketAPIHTTPMethodPOST;
+    NSArray * actionArray = @[@{@"action": @"delete", @"item_id":article.articleID, @"time": [NSNumber numberWithInteger:[[NSDate date] timeIntervalSince1970]]}];
+    NSMutableDictionary *arguments = [NSMutableDictionary dictionaryWithDictionary:@{@"consumer_key": [NSString stringWithFormat:@"%lu", (unsigned long)[PocketAPI sharedAPI].appID], @"actions":actionArray}];
+    
+    [[PocketAPI sharedAPI] callAPIMethod:apiMethod
+                          withHTTPMethod:httpMethod
+                               arguments:arguments
+                                 handler:^(PocketAPI *api, NSString *apiMethod, NSDictionary *response, NSError *error){
+                                     if (error) {
+                                         failure(nil, error);
+                                     }else{
+                                         [self.localArticles removeObject:article];
+                                         success();
+                                     }
+                                 }];
 }
 
 - (void)deleteArticles:(NSArray *)articles withSuccess:(CLTArticleManagerSuccess) success andFailure:(CLTArticleManagerFailure) failure{
-
+    NSString *apiMethod = @"send";
+    PocketAPIHTTPMethod httpMethod = PocketAPIHTTPMethodPOST;
+    NSMutableArray *actionArray  = [NSMutableArray array];
+    for (CLTArticle * article in articles) {
+        [actionArray addObject:@{@"action": @"delete", @"item_id":article.articleID, @"time": [NSNumber numberWithInteger:[[NSDate date] timeIntervalSince1970]]}];
+    }
+    
+    NSMutableDictionary *arguments = [NSMutableDictionary dictionaryWithDictionary:@{@"consumer_key": [NSString stringWithFormat:@"%lu", (unsigned long)[PocketAPI sharedAPI].appID], @"actions":actionArray}];
+    
+    [[PocketAPI sharedAPI] callAPIMethod:apiMethod
+                          withHTTPMethod:httpMethod
+                               arguments:arguments
+                                 handler:^(PocketAPI *api, NSString *apiMethod, NSDictionary *response, NSError *error){
+                                     if (error) {
+                                         failure(nil, error);
+                                     }else{
+                                         [self.localArticles removeObjectsInArray:articles];
+                                         success();
+                                     }
+                                 }];
 }
 
 - (void)refetchAndParseArticle:(CLTArticle *)article withSuccess:(CLTArticleManagerSuccess) success andFailure:(CLTArticleManagerFailure) failure{

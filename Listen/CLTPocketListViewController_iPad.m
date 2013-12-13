@@ -12,6 +12,7 @@
 #import <AFNetworking/AFHTTPRequestOperationManager.h>
 #import <JSONKit/JSONKit.h>
 #import <Block-KVO/NSObject+MTKObserving.h>
+#import <UIColor-Utilities/UIColor+Expanded.h>
 
 #import "CLTWebViewController.h"
 #import "CLTArticleManager.h"
@@ -19,7 +20,7 @@
 
 @interface CLTPocketListViewController_iPad () <CLTAudioManagerDelegate>
 
-@property (strong, nonatomic) NSArray * articleArray;
+@property (strong, nonatomic) NSMutableArray * articleArray;
 
 @end
 
@@ -70,7 +71,7 @@
     else if ([CLTArticleManager hasBeenPersisted]) {
         [self showLoading:YES];
         dispatch_async(dispatch_get_global_queue(0, 0), ^(){
-            self.articleArray = [[CLTArticleManager shared] localArticlesSortedByDate];
+            self.articleArray = [[[CLTArticleManager shared] localArticlesSortedByDate] mutableCopy];
             [[CLTAudioManager shared] setPlaylist:[self.articleArray mutableCopy]];
             dispatch_async(dispatch_get_main_queue(), ^(){
                 [[self tableView] reloadData];
@@ -98,7 +99,7 @@
 -(void)refresh{
     [self showLoading:YES];
     [[CLTArticleManager shared] fetchUnreadArticlesSinceLastFetchWithSuccess:^(){
-        self.articleArray = [[CLTArticleManager shared] localArticlesSortedByDate];
+        self.articleArray = [[[CLTArticleManager shared] localArticlesSortedByDate] mutableCopy];
         [[CLTAudioManager shared] setPlaylist:[self.articleArray mutableCopy]];
         dispatch_async(dispatch_get_main_queue(), ^(){
             [[self tableView] reloadData];
@@ -114,7 +115,9 @@
     
     if (loading) {
         UIActivityIndicatorView * activityView = [[UIActivityIndicatorView alloc] initWithFrame:CGRectMake(0, 0, 25, 25)];
-        [activityView setColor:[UIColor redColor]];
+        [activityView sizeToFit];
+        [activityView setAutoresizingMask:(UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin)];
+        [activityView setColor:[UIColor colorWithHexString:@"1bb0f9"]];
         [activityView startAnimating];
         rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:activityView];
     }else{
@@ -217,6 +220,39 @@
     CLTWebViewController * webViewController = (CLTWebViewController*)detailNavigationViewController.topViewController;
     [webViewController setTitle:article.title];
     [webViewController loadURL:[NSURL URLWithString:urlString]];
+}
+
+- (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath{
+    return UITableViewCellEditingStyleDelete;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForDeleteConfirmationButtonForRowAtIndexPath:(NSIndexPath *)indexPath{
+    return @"Mark Read";
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath{
+    CLTArticle * article = self.articleArray[indexPath.row];
+    [[CLTArticleManager shared] markArticleRead:article withSuccess:^(){
+        
+    }andFailure:^(AFHTTPRequestOperation * operation, NSError * error){
+        
+    }];
+    [self.articleArray removeObjectAtIndex:indexPath.row];
+    [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationLeft];
+    
+    NSIndexPath * nextIndex = [NSIndexPath indexPathForRow:indexPath.row+1 inSection:0];
+    [self.tableView selectRowAtIndexPath:nextIndex animated:YES scrollPosition:UITableViewScrollPositionMiddle];
+    CLTArticle * nextArticle = self.articleArray[indexPath.row+1];
+    NSString * urlString = [NSString stringWithFormat:@"http://www.readability.com/m?url=%@", nextArticle.URL];
+    UINavigationController * detailNavigationViewController = self.splitViewController.childViewControllers[1];
+    
+    CLTWebViewController * webViewController = (CLTWebViewController*)detailNavigationViewController.topViewController;
+    [webViewController setTitle:article.title];
+    [webViewController loadURL:[NSURL URLWithString:urlString]];
+}
+
+- (BOOL)tableView:(UITableView *)tableView shouldIndentWhileEditingRowAtIndexPath:(NSIndexPath *)indexPath{
+    return YES;
 }
 
 - (void)didReceiveMemoryWarning

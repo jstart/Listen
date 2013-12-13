@@ -20,7 +20,7 @@
             </objects>
             <point key="canvasLocation" x="118" y="-147"/>
         </scene>
-        <!--Pocket List View Controller - Articles-->
+        <!--Pocket List View Controller-->
         <scene sceneID="btJ-PC-ZSy">
             <objects>
                 <tableViewController id="sb1-BW-t1f" customClass="CLTPocketListViewController" sceneMemberID="viewController">
@@ -45,7 +45,6 @@
                         </connections>
                     </tableView>
                     <extendedEdge key="edgesForExtendedLayout" top="YES"/>
-                    <tabBarItem key="tabBarItem" title="Articles" image="first" id="44y-fu-pry"/>
                     <navigationItem key="navigationItem" id="z6G-gW-VbF"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="5iR-AG-wvb" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -53,10 +52,7 @@
             <point key="canvasLocation" x="657" y="-147"/>
         </scene>
     </scenes>
-    <resources>
-        <image name="first" width="30" height="30"/>
-    </resources>
-    <color key="tintColor" red="1" green="0.074509803921568626" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+    <color key="tintColor" red="0.10588235294117647" green="0.69019607843137254" blue="0.97647058823529409" alpha="1" colorSpace="calibratedRGB"/>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
         <simulatedOrientationMetrics key="orientation"/>
