@@ -68,7 +68,8 @@ static CLTAudioManager * sharedInstance;
     // set up our TTS synth
     self.synth = [[AVSpeechSynthesizer alloc] init];
     self.synth.delegate = self;
-    
+    self.voice = self.voice;
+
     self.audioPlayer = [[AVAudioPlayer alloc] init];
     
     [[AVAudioSession sharedInstance] setActive: YES error: nil];
@@ -97,7 +98,7 @@ static CLTAudioManager * sharedInstance;
     if (index > self.playlist.count || index < 0) {
         NSString * articleContent = @"";
         AVSpeechUtterance *utterance = [AVSpeechUtterance speechUtteranceWithString:articleContent];
-        utterance.voice = [AVSpeechSynthesisVoice voiceWithLanguage:@"en-AU"];
+        utterance.voice = self.voice;
         utterance.rate = AVSpeechUtteranceDefaultSpeechRate - (AVSpeechUtteranceDefaultSpeechRate*0.5);
         utterance.postUtteranceDelay = 0.3;
         utterance.preUtteranceDelay = 0.3;
@@ -106,7 +107,7 @@ static CLTAudioManager * sharedInstance;
         CLTArticle * article = self.playlist[index];
         NSString * articleContent = [NSString stringWithFormat:@"%@, %@", article.title, article.content];
         AVSpeechUtterance *utterance = [AVSpeechUtterance speechUtteranceWithString:articleContent];
-        utterance.voice = [AVSpeechSynthesisVoice voiceWithLanguage:@"en-AU"];
+        utterance.voice = self.voice;
         utterance.rate = AVSpeechUtteranceDefaultSpeechRate - (AVSpeechUtteranceDefaultSpeechRate*0.5);
         utterance.postUtteranceDelay = 0.3;
         utterance.preUtteranceDelay = 0.3;

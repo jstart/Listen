@@ -264,10 +264,10 @@
     [[CLTArticleManager shared] markArticleRead:article withSuccess:^(){
         
     }andFailure:^(AFHTTPRequestOperation * operation, NSError * error){
-        
+        [self.articleArray insertObject:article atIndex:indexPath.row];
+        [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationRight];
     }];
     [self.articleArray removeObjectAtIndex:indexPath.row];
-    [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationLeft];
 }
 
 - (BOOL)tableView:(UITableView *)tableView shouldIndentWhileEditingRowAtIndexPath:(NSIndexPath *)indexPath{

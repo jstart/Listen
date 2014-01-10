@@ -18,7 +18,9 @@
     NSDictionary * json = [super responseObjectForResponse:response data:data error:error];
     NSString * content = json[@"content"];
     
-    CLTArticle * article = [[CLTArticleManager shared] articleForURLString:json[@"url"]];
+    NSString * url = [[json[@"url"] stringByReplacingOccurrencesOfString:@"http://" withString:@""] stringByReplacingOccurrencesOfString:@"www." withString:@""];
+
+    CLTArticle * article = [[CLTArticleManager shared] articleForURLString:url];
     content = [[content kv_decodeHTMLCharacterEntities] kv_stripXMLTags];
     article.content = content;
     [article updateArticleFromDictionary:json];
