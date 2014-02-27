@@ -7,14 +7,17 @@
 //
 @import MediaPlayer;
 @import AVFoundation;
+
 #import "CLTPocketListViewController.h"
 #import <PocketAPI/PocketAPI.h>
 #import <AFNetworking/AFHTTPRequestOperationManager.h>
+#import <AFNetworking/UIImageView+AFNetworking.h>
 #import <JSONKit/JSONKit.h>
 #import <Block-KVO/NSObject+MTKObserving.h>
 #import <UIColor-Utilities/UIColor+Expanded.h>
 
 #import "CLTWebViewController.h"
+#import "CLTArticleTableViewCell.h"
 #import "CLTArticleManager.h"
 #import "CLTAudioManager.h"
 
@@ -29,6 +32,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    [self.tableView registerNib:[UINib nibWithNibName:@"CLTArticleTableViewCell" bundle:nil] forCellReuseIdentifier:@"CLTArticleTableViewCell"];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(pocketLoginStarted:)
@@ -107,7 +111,6 @@
         dispatch_async(dispatch_get_main_queue(), ^(){
             [self showLoading:NO];
             [[self tableView] reloadData];
-            [self showLoading:NO];
         });
     } andFailure:^(AFHTTPRequestOperation * operation, NSError * error){
 
@@ -231,13 +234,16 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
-    static NSString * cellIdentifier = @"CellIdentifier";
-    UITableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+    static NSString * cellIdentifier = @"CLTArticleTableViewCell";
+    CLTArticleTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
     if (cell == nil) {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+        cell = [[CLTArticleTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
     CLTArticle * article = self.articleArray[indexPath.row];
-    cell.textLabel.text = article.title;
+    cell.titleLabel.text = article.title;
+    cell.detailLabel.text = article.excerpt;
+    [cell.imageArticleView setImageWithURL:[NSURL URLWithString:article.imageURL]];
+    
     return cell;
 }
 
@@ -271,7 +277,11 @@
 }
 
 - (BOOL)tableView:(UITableView *)tableView shouldIndentWhileEditingRowAtIndexPath:(NSIndexPath *)indexPath{
-    return YES;
+    return NO;
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    return 88.0f;
 }
 
 - (void)didReceiveMemoryWarning

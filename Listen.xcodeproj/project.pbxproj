@@ -28,6 +28,8 @@
 		23BBF20D18370879009D1C3B /* NSDictionary+Safe.m in Sources */ = {isa = PBXBuildFile; fileRef = 23BBF20C18370879009D1C3B /* NSDictionary+Safe.m */; };
 		23BBF235183AC857009D1C3B /* NSString+HTML.m in Sources */ = {isa = PBXBuildFile; fileRef = 23BBF234183AC857009D1C3B /* NSString+HTML.m */; };
 		23E2382A1840A6B400BD7D12 /* CLTWebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 23E238291840A6B400BD7D12 /* CLTWebViewController.m */; };
+		3396BDB318BADF5E00D824F6 /* CLTArticleTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3396BDB218BADF5E00D824F6 /* CLTArticleTableViewCell.xib */; };
+		3396BDB718BAE25900D824F6 /* CLTArticleTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3396BDB618BAE25900D824F6 /* CLTArticleTableViewCell.m */; };
 		7D2238E21847465900F1E89E /* CLTReadabilityResponseSerializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D2238E11847465900F1E89E /* CLTReadabilityResponseSerializer.m */; };
 		7D2238E518474E4600F1E89E /* CLTDiffbotResponseSerializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D2238E418474E4600F1E89E /* CLTDiffbotResponseSerializer.m */; };
 		7D26DE501846CE2F00458C7B /* CLTPocketListViewController_iPad.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D26DE4F1846CE2F00458C7B /* CLTPocketListViewController_iPad.m */; };
@@ -80,6 +82,9 @@
 		23BBF234183AC857009D1C3B /* NSString+HTML.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSString+HTML.m"; path = "Utilities/NSString+HTML.m"; sourceTree = "<group>"; };
 		23E238281840A6B400BD7D12 /* CLTWebViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CLTWebViewController.h; path = Subclasses/CLTWebViewController.h; sourceTree = "<group>"; };
 		23E238291840A6B400BD7D12 /* CLTWebViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CLTWebViewController.m; path = Subclasses/CLTWebViewController.m; sourceTree = "<group>"; };
+		3396BDB218BADF5E00D824F6 /* CLTArticleTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = CLTArticleTableViewCell.xib; path = TableViewCell/CLTArticleTableViewCell.xib; sourceTree = "<group>"; };
+		3396BDB518BAE25900D824F6 /* CLTArticleTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CLTArticleTableViewCell.h; path = TableViewCell/CLTArticleTableViewCell.h; sourceTree = "<group>"; };
+		3396BDB618BAE25900D824F6 /* CLTArticleTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CLTArticleTableViewCell.m; path = TableViewCell/CLTArticleTableViewCell.m; sourceTree = "<group>"; };
 		7D2238E01847465900F1E89E /* CLTReadabilityResponseSerializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CLTReadabilityResponseSerializer.h; path = "Data Managers/CLTReadabilityResponseSerializer.h"; sourceTree = "<group>"; };
 		7D2238E11847465900F1E89E /* CLTReadabilityResponseSerializer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CLTReadabilityResponseSerializer.m; path = "Data Managers/CLTReadabilityResponseSerializer.m"; sourceTree = "<group>"; };
 		7D2238E318474E4600F1E89E /* CLTDiffbotResponseSerializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CLTDiffbotResponseSerializer.h; path = "Data Managers/CLTDiffbotResponseSerializer.h"; sourceTree = "<group>"; };
@@ -164,6 +169,7 @@
 				7D26DE4F1846CE2F00458C7B /* CLTPocketListViewController_iPad.m */,
 				239F0C0A181F488200503170 /* CLTPocketListViewController.h */,
 				239F0C0B181F488200503170 /* CLTPocketListViewController.m */,
+				3396BDB418BAE22800D824F6 /* Table View Cells */,
 				239F0C10181F488200503170 /* LaunchImages.xcassets */,
 				7DAF207E18514DE9004C2FAF /* AppIcon.xcassets */,
 				239F0BFC181F488200503170 /* Supporting Files */,
@@ -243,6 +249,16 @@
 				23E238291840A6B400BD7D12 /* CLTWebViewController.m */,
 			);
 			name = Subclasses;
+			sourceTree = "<group>";
+		};
+		3396BDB418BAE22800D824F6 /* Table View Cells */ = {
+			isa = PBXGroup;
+			children = (
+				3396BDB218BADF5E00D824F6 /* CLTArticleTableViewCell.xib */,
+				3396BDB518BAE25900D824F6 /* CLTArticleTableViewCell.h */,
+				3396BDB618BAE25900D824F6 /* CLTArticleTableViewCell.m */,
+			);
+			name = "Table View Cells";
 			sourceTree = "<group>";
 		};
 		7D296049184403D200A9FDD0 /* iPad */ = {
@@ -344,6 +360,7 @@
 				7D29604B184404ED00A9FDD0 /* Main_iPad.storyboard in Resources */,
 				239F0C00181F488200503170 /* InfoPlist.strings in Resources */,
 				239F0C09181F488200503170 /* Main.storyboard in Resources */,
+				3396BDB318BADF5E00D824F6 /* CLTArticleTableViewCell.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -400,6 +417,7 @@
 				23BBF20818359736009D1C3B /* CLTArticleManager.m in Sources */,
 				7D2238E518474E4600F1E89E /* CLTDiffbotResponseSerializer.m in Sources */,
 				239F0C0C181F488200503170 /* CLTPocketListViewController.m in Sources */,
+				3396BDB718BAE25900D824F6 /* CLTArticleTableViewCell.m in Sources */,
 				23BBF235183AC857009D1C3B /* NSString+HTML.m in Sources */,
 				23BBF2051835861D009D1C3B /* CLTArticle.m in Sources */,
 				7D26DE501846CE2F00458C7B /* CLTPocketListViewController_iPad.m in Sources */,
